@@ -11,6 +11,10 @@ namespace si1
         int[,] _distTable;
         int[,] _flowTable;
 
+        int _tourSize = 5;
+        int _popSize = 100;
+        int _genNumber = 100;
+
         public Program()
         {
             _distTable = new int[12, 12] {
@@ -62,7 +66,7 @@ namespace si1
 
         public int[,] InitialPop()
         {
-            int[,] _out = new int[100, 5];
+            int[,] _out = new int[_popSize, _tourSize];
             Random _rnd = new Random();
 
             for (int i = 0; i < _out.GetLength(0); i++)
@@ -91,28 +95,91 @@ namespace si1
             return _out;
         }
 
-        public int[] Evaluate(int[,] pop)
+        public Tuple<int[,], int[]> Evaluate(int[,] pop)
         {
-            int[] _out = new int[pop.GetLength(1)];
+            int[] _costs = new int[pop.GetLength(0)];
 
             for (int i = 0; i < pop.GetLength(0); i++)
             {
-                _out[i] = CostFunc(GetRow(pop, i));
+                _costs[i] = CostFunc(GetRow(pop, i));
+            }
+            return new Tuple<int[,], int[]>(pop, _costs);
+        }
+
+        public Tuple<int[,], int[]> TournamentSelection(Tuple<int[,], int[]> pop, int tournamentSize)
+        {
+            Random _rnd = new Random();
+            int _popSizeTemp = pop.Item1.GetLength(0);
+
+            Tuple<int[,], int[]> _out = new Tuple<int[,], int[]>
+                (new int[_popSizeTemp, pop.Item1.GetLength(1)], new int[_popSizeTemp]);
+
+            Tuple<int[], int> _winner = new Tuple<int[], int>(new int[pop.Item1.GetLength(1)], int.MaxValue);
+
+            for (int i = 0; i < _popSizeTemp; i++)
+            {
+                for(int j = 0; j < tournamentSize; j++)
+                {
+                    int _playerIndex = _rnd.Next(_popSizeTemp);
+                    if(pop.Item2[_playerIndex] < _winner.Item2)
+                    {
+                        _winner = new Tuple<int[], int>(GetRow(pop.Item1, _playerIndex), pop.Item2[_playerIndex]);
+                    }
+                }
+                for(int j = 0; j < pop.Item1.GetLength(1); j++)
+                {
+                    _out.Item1[i, j] = _winner.Item1[j];
+                }
+                _out.Item2[i] = _winner.Item2;
             }
             return _out;
         }
 
-        public int[,] Selection(int[,] pop, int costs)
+        public Tuple<int[,], int[]> RouletteSelection(Tuple<int[,], int[]> pop)
+        {
+            Random _rnd = new Random();
+            int _popSizeTemp = pop.Item1.GetLength(0);
+
+            Tuple<int[,], int[]> _out = new Tuple<int[,], int[]>
+                (new int[_popSizeTemp, pop.Item1.GetLength(1)], new int[_popSizeTemp]);
+
+            Tuple<int[], int> _winner = new Tuple<int[], int>(new int[pop.Item1.GetLength(1)], int.MaxValue);
+
+            int _totalSumOfCosts = pop.Item2.Sum();
+
+            for(int i = 0; i < _popSizeTemp; i++)
+            {
+                int _winnerNumber = _rnd.Next(_totalSumOfCosts);
+                int _sumOfCosts = 0;
+                int j = 0;
+
+                while(_sumOfCosts < _winnerNumber)
+                {
+                    _sumOfCosts += pop.Item2[j];
+                    j++;
+                }
+                _winner = new Tuple<int[], int>(GetRow(pop.Item1, j - 1), pop.Item2[j-1]);
+
+                for (int k = 0; k < pop.Item1.GetLength(1); k++)
+                {
+                    _out.Item1[i, k] = _winner.Item1[k];
+                }
+                _out.Item2[i] = _winner.Item2;
+            }
+            return _out;
+        }
+
+        public Tuple<int[,], int[]> Crossover(Tuple<int[,], int[]> pop, float px)
         {
 
         }
 
-        public int[,] Crossover(int[,] pop, int costs)
+        public Tuple<int[,], int[]> Mutation(Tuple<int[,], int[]> pop, float pm)
         {
 
         }
 
-        public int[,] Mutation(int[,] pop, int costs)
+        public void Repair(int[] speciment)
         {
 
         }
