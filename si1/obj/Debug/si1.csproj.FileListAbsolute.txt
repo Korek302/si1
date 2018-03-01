@@ -1,0 +1,7 @@
+D:\GitHub\si1\si1\bin\Debug\si1.exe.config
+D:\GitHub\si1\si1\bin\Debug\si1.exe
+D:\GitHub\si1\si1\bin\Debug\si1.pdb
+D:\GitHub\si1\si1\obj\Debug\si1.csprojResolveAssemblyReference.cache
+D:\GitHub\si1\si1\obj\Debug\si1.csproj.CoreCompileInputs.cache
+D:\GitHub\si1\si1\obj\Debug\si1.exe
+D:\GitHub\si1\si1\obj\Debug\si1.pdb
