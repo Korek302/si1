@@ -14,14 +14,12 @@ namespace si1
         int _factoryNumber;
         int _locNumber;
         int _popSize;
-        int _genNumber;
 
         public Program()
         {
-            _factoryNumber = 5;
+            _factoryNumber = 12;
             _locNumber = 12;
             _popSize = 100;
-            _genNumber = 100;
 
             _distTable = new int[12, 12] {
                 { 0, 1, 2, 2, 3, 4, 4, 5, 3, 5, 6, 7 },
@@ -38,13 +36,83 @@ namespace si1
                 { 7, 6, 5, 5, 4, 3, 3, 2, 6, 2, 1, 0 }
             };
 
-            _flowTable = new int[5, 5] {
-                { 0, 3, 4, 6, 8 },
-                { 3, 0, 6, 3, 7 },
-                { 4, 6, 0, 2, 6 },
-                { 6, 3, 2, 0, 5 },
-                { 8, 7, 6, 5, 0 }
+            _flowTable = new int[12, 12] {
+              { 0,  3,  4,  6,  8,  5,  6,  6,  5,  1,  4,  6},
+              { 3, 0,  6,  3,  7,  9,  9,  2,  2,  7,  4,  7},
+              { 4,  6,  0,  2,  6,  4,  4,  4,  2,  6,  3,  6},
+              {6,  3,  2,  0,  5,  5,  3,  3,  9,  4,  3,  6},
+              {8,  7,  6,  5,  0,  4,  3,  4,  5,  7,  6,  7},
+              {5,  9,  4,  5,  4,  0,  8,  5,  5,  5,  7,  5},
+              {6,  9,  4,  3,  3,  8,  0,  6,  8,  4,  6,  7},
+              {6,  2,  4,  3,  4,  5,  6,  0,  1,  5,  5,  3},
+              {5,  2,  2,  9,  5,  5,  8,  1,  0,  4,  5,  2},
+              {1,  7,  6,  4,  7,  5,  4,  5,  4,  0,  7,  7},
+              {4,  4,  3,  3,  6,  7,  6,  5,  5,  7,  0,  9},
+              {6,  7,  6,  6,  7,  5,  7,  3,  2,  7,  9,  0 },
             };
+
+            //_flowTable = new int[5, 5] {
+            //    { 0, 3, 4, 6, 8 },
+            //    { 3, 0, 6, 3, 7 },
+            //    { 4, 6, 0, 2, 6 },
+            //    { 6, 3, 2, 0, 5 },
+            //    { 8, 7, 6, 5, 0 }
+            //};
+        }
+
+        public Program(int popSize)
+        {
+            _factoryNumber = 12;
+            _locNumber = 12;
+            _popSize = popSize;
+
+            _distTable = new int[12, 12] {
+                { 0, 1, 2, 2, 3, 4, 4, 5, 3, 5, 6, 7 },
+                { 1, 0, 1, 1, 2, 3, 3, 4, 2, 4, 5, 6 },
+                { 2, 1, 0, 2, 1, 2, 2, 3, 1, 3, 4, 5 },
+                { 2, 1, 2, 0, 1, 2, 2, 3, 3, 3, 4, 5 },
+                { 3, 2, 1, 1, 0, 1, 1, 2, 2, 2, 3, 4 },
+                { 4, 3, 2, 2, 1, 0, 2, 3, 3, 1, 2, 3 },
+                { 4, 3, 2, 2, 1, 2, 0, 1, 3, 1, 2, 3 },
+                { 5, 4, 3, 3, 2, 3, 1, 0, 4, 2, 1, 2 },
+                { 3, 2, 1, 3, 2, 3, 3, 4, 0, 4, 5, 6 },
+                { 5, 4, 3, 3, 2, 1, 1, 2, 4, 0, 1, 2 },
+                { 6, 5, 4, 4, 3, 2, 2, 1, 5, 1, 0, 1 },
+                { 7, 6, 5, 5, 4, 3, 3, 2, 6, 2, 1, 0 }
+            };
+
+            _flowTable = new int[12, 12] {
+              { 0,  3,  4,  6,  8,  5,  6,  6,  5,  1,  4,  6},
+              { 3, 0,  6,  3,  7,  9,  9,  2,  2,  7,  4,  7},
+              { 4,  6,  0,  2,  6,  4,  4,  4,  2,  6,  3,  6},
+              {6,  3,  2,  0,  5,  5,  3,  3,  9,  4,  3,  6},
+              {8,  7,  6,  5,  0,  4,  3,  4,  5,  7,  6,  7},
+              {5,  9,  4,  5,  4,  0,  8,  5,  5,  5,  7,  5},
+              {6,  9,  4,  3,  3,  8,  0,  6,  8,  4,  6,  7},
+              {6,  2,  4,  3,  4,  5,  6,  0,  1,  5,  5,  3},
+              {5,  2,  2,  9,  5,  5,  8,  1,  0,  4,  5,  2},
+              {1,  7,  6,  4,  7,  5,  4,  5,  4,  0,  7,  7},
+              {4,  4,  3,  3,  6,  7,  6,  5,  5,  7,  0,  9},
+              {6,  7,  6,  6,  7,  5,  7,  3,  2,  7,  9,  0 },
+            };
+
+            //_flowTable = new int[5, 5] {
+            //    { 0, 3, 4, 6, 8 },
+            //    { 3, 0, 6, 3, 7 },
+            //    { 4, 6, 0, 2, 6 },
+            //    { 6, 3, 2, 0, 5 },
+            //    { 8, 7, 6, 5, 0 }
+            //};
+        }
+
+        public Program(int factoryNumber, int locNumber, int popSize, int[,] distTable, int[,] flowTable)
+        {
+            _factoryNumber = factoryNumber;
+            _locNumber = locNumber;
+            _popSize = popSize;
+
+            _distTable = distTable;
+            _flowTable = flowTable;
         }
 
         public int CostFunc(int[] specimen)
@@ -130,6 +198,7 @@ namespace si1
                 if(_costs[i] < _bestCost)
                 {
                     _best = GetRow(pop, i);
+                    _bestCost = _costs[i];
                 }
             }
             if(bestProtection)
@@ -395,15 +464,16 @@ namespace si1
 
         static void Main(string[] args)
         {
-            Program p = new Program();
-            
             int _genNumber = 100;
+            int _popSize = 100;
             int _tournamentSize = 5;
             float px = 0.7f;
             float pm = 0.01f;
-            Boolean _bestProtection = true;
-            int[] _best = new int[p._factoryNumber];
+            Boolean _bestProtection = true; //jak false to najlepszy zwraca same 0
 
+            Program p = new Program(_popSize);
+
+            int[] _best = new int[p._factoryNumber];
             int[,] _firstPop = p.InitialPop();
             int[,] _currPop = _firstPop;
             Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_firstPop, _bestProtection);
@@ -415,7 +485,7 @@ namespace si1
                 _currPop = p.Crossover(_currPop, px);
                 _currPop = p.Mutation(_currPop, pm);
                 _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
-                //Console.WriteLine(_currPopWithCost.Item2[99]);
+                Console.WriteLine(_currPopWithCost.Item2[99]);
                 if(_bestProtection)
                 {
                     _best = _currPopWithCost.Item3;
