@@ -141,10 +141,11 @@ namespace si1
         public int[,] InitialPop()
         {
             int[,] _out = new int[_popSize, _factoryNumber];
+            Random _rnd = new Random();
 
             for (int i = 0; i < _out.GetLength(0); i++)
             {
-                int[] _temp = RandomUniqueNums(_factoryNumber);
+                int[] _temp = RandomUniqueNums(_factoryNumber, _rnd);
                 for (int j = 0; j < _out.GetLength(1); j++)
                 {
                     _out[i, j] = _temp[j];
@@ -153,17 +154,16 @@ namespace si1
             return _out;
         }
 
-        public int[] RandomUniqueNums(int howMany)
+        public int[] RandomUniqueNums(int howMany, Random rnd)
         {
-            Random _rnd = new Random();
             int[] _out = Enumerable.Repeat(-1, howMany).ToArray();
 
             for(int i = 0; i < howMany; i++)
             {
-                int _temp = _rnd.Next(_locNumber);
+                int _temp = rnd.Next(_locNumber);
                 while(_out.Contains(_temp))
                 {
-                    _temp = _rnd.Next(_locNumber);
+                    _temp = rnd.Next(_locNumber);
                 }
                 _out[i] = _temp;
             }
@@ -291,13 +291,21 @@ namespace si1
             return _out;
         }
 
-        public int[] SingleCrossover(int[] parent1, int[] parent2, int breakpoint)
+        public int[] SingleCrossover(int[] parent1, int[] parent2, int breakpoint, Random rnd)
         {
             int[] _out = new int[parent1.Length];
             if(breakpoint < parent1.Length && parent1.Length == parent2.Length && breakpoint > 0)
             {
-                Array.Copy(parent1, 0, _out, 0, breakpoint);
-                Array.Copy(parent2, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                if (rnd.Next(2) == 0)
+                {
+                    Array.Copy(parent1, 0, _out, 0, breakpoint);
+                    Array.Copy(parent2, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                }
+                else
+                {
+                    Array.Copy(parent2, 0, _out, 0, breakpoint);
+                    Array.Copy(parent1, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                }
             }
             else
             {
@@ -318,8 +326,7 @@ namespace si1
 
             for (int i = 0; i < _popSizeTemp; i++)
             {
-                int _chosenIndex = _rnd.Next(_popSizeTemp);
-                int[] _chosen = GetRow(pop, _chosenIndex);
+                int[] _chosen = GetRow(pop, i);
 
                 int _roll = _rnd.Next(100) + 1;
                 if(_roll > _threshold)
@@ -335,7 +342,7 @@ namespace si1
                     //jest krzyz
                     int _chosenIndex2 = _rnd.Next(_popSizeTemp);
                     int[] _chosen2 = GetRow(pop, _chosenIndex2);
-                    int[] _child = SingleCrossover(_chosen, _chosen2, (int)(_chosen.Length/2));
+                    int[] _child = SingleCrossover(_chosen, _chosen2, (int)(_chosen.Length/2), _rnd);
                     Repair(_child);
 
                     for (int j = 0; j < pop.GetLength(1); j++)
@@ -383,8 +390,7 @@ namespace si1
 
             for (int i = 0; i < _popSizeTemp; i++)
             {
-                int _chosenIndex = _rnd.Next(_popSizeTemp);
-                int[] _chosen = GetRow(pop, _chosenIndex);
+                int[] _chosen = GetRow(pop, i);
 
                 int _roll = _rnd.Next(100) + 1;
                 if (_roll > _threshold)
