@@ -21,7 +21,7 @@ namespace si1
             _locNumber = 12;
             _popSize = 100;
 
-            _distTable = new int[12, 12] {
+            _flowTable = new int[12, 12] {
                 { 0, 1, 2, 2, 3, 4, 4, 5, 3, 5, 6, 7 },
                 { 1, 0, 1, 1, 2, 3, 3, 4, 2, 4, 5, 6 },
                 { 2, 1, 0, 2, 1, 2, 2, 3, 1, 3, 4, 5 },
@@ -36,7 +36,7 @@ namespace si1
                 { 7, 6, 5, 5, 4, 3, 3, 2, 6, 2, 1, 0 }
             };
 
-            _flowTable = new int[12, 12] {
+            _distTable = new int[12, 12] {
               { 0,  3,  4,  6,  8,  5,  6,  6,  5,  1,  4,  6},
               { 3, 0,  6,  3,  7,  9,  9,  2,  2,  7,  4,  7},
               { 4,  6,  0,  2,  6,  4,  4,  4,  2,  6,  3,  6},
@@ -66,7 +66,7 @@ namespace si1
             _locNumber = 12;
             _popSize = popSize;
 
-            _distTable = new int[12, 12] {
+            _flowTable = new int[12, 12] {
                 { 0, 1, 2, 2, 3, 4, 4, 5, 3, 5, 6, 7 },
                 { 1, 0, 1, 1, 2, 3, 3, 4, 2, 4, 5, 6 },
                 { 2, 1, 0, 2, 1, 2, 2, 3, 1, 3, 4, 5 },
@@ -81,7 +81,7 @@ namespace si1
                 { 7, 6, 5, 5, 4, 3, 3, 2, 6, 2, 1, 0 }
             };
 
-            _flowTable = new int[12, 12] {
+            _distTable = new int[12, 12] {
               { 0,  3,  4,  6,  8,  5,  6,  6,  5,  1,  4,  6},
               { 3, 0,  6,  3,  7,  9,  9,  2,  2,  7,  4,  7},
               { 4,  6,  0,  2,  6,  4,  4,  4,  2,  6,  3,  6},
@@ -474,9 +474,8 @@ namespace si1
             Program p = new Program(_popSize);
 
             int[] _best = new int[p._factoryNumber];
-            int[,] _firstPop = p.InitialPop();
-            int[,] _currPop = _firstPop;
-            Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_firstPop, _bestProtection);
+            int[,] _currPop = p.InitialPop();
+            Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
 
             for(int i = 0; i < _genNumber; i++)
             {
@@ -485,7 +484,9 @@ namespace si1
                 _currPop = p.Crossover(_currPop, px);
                 _currPop = p.Mutation(_currPop, pm);
                 _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
+
                 Console.WriteLine(_currPopWithCost.Item2[99]);
+
                 if(_bestProtection)
                 {
                     _best = _currPopWithCost.Item3;
