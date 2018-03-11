@@ -62,47 +62,8 @@ namespace si1
 
         public Program(int popSize)
         {
-            _factoryNumber = 12;
-            _locNumber = 12;
             _popSize = popSize;
-
-            _flowTable = new int[12, 12] {
-                { 0, 1, 2, 2, 3, 4, 4, 5, 3, 5, 6, 7 },
-                { 1, 0, 1, 1, 2, 3, 3, 4, 2, 4, 5, 6 },
-                { 2, 1, 0, 2, 1, 2, 2, 3, 1, 3, 4, 5 },
-                { 2, 1, 2, 0, 1, 2, 2, 3, 3, 3, 4, 5 },
-                { 3, 2, 1, 1, 0, 1, 1, 2, 2, 2, 3, 4 },
-                { 4, 3, 2, 2, 1, 0, 2, 3, 3, 1, 2, 3 },
-                { 4, 3, 2, 2, 1, 2, 0, 1, 3, 1, 2, 3 },
-                { 5, 4, 3, 3, 2, 3, 1, 0, 4, 2, 1, 2 },
-                { 3, 2, 1, 3, 2, 3, 3, 4, 0, 4, 5, 6 },
-                { 5, 4, 3, 3, 2, 1, 1, 2, 4, 0, 1, 2 },
-                { 6, 5, 4, 4, 3, 2, 2, 1, 5, 1, 0, 1 },
-                { 7, 6, 5, 5, 4, 3, 3, 2, 6, 2, 1, 0 }
-            };
-
-            _distTable = new int[12, 12] {
-              { 0,  3,  4,  6,  8,  5,  6,  6,  5,  1,  4,  6},
-              { 3, 0,  6,  3,  7,  9,  9,  2,  2,  7,  4,  7},
-              { 4,  6,  0,  2,  6,  4,  4,  4,  2,  6,  3,  6},
-              {6,  3,  2,  0,  5,  5,  3,  3,  9,  4,  3,  6},
-              {8,  7,  6,  5,  0,  4,  3,  4,  5,  7,  6,  7},
-              {5,  9,  4,  5,  4,  0,  8,  5,  5,  5,  7,  5},
-              {6,  9,  4,  3,  3,  8,  0,  6,  8,  4,  6,  7},
-              {6,  2,  4,  3,  4,  5,  6,  0,  1,  5,  5,  3},
-              {5,  2,  2,  9,  5,  5,  8,  1,  0,  4,  5,  2},
-              {1,  7,  6,  4,  7,  5,  4,  5,  4,  0,  7,  7},
-              {4,  4,  3,  3,  6,  7,  6,  5,  5,  7,  0,  9},
-              {6,  7,  6,  6,  7,  5,  7,  3,  2,  7,  9,  0 },
-            };
-
-            //_flowTable = new int[5, 5] {
-            //    { 0, 3, 4, 6, 8 },
-            //    { 3, 0, 6, 3, 7 },
-            //    { 4, 6, 0, 2, 6 },
-            //    { 6, 3, 2, 0, 5 },
-            //    { 8, 7, 6, 5, 0 }
-            //};
+            ReadFile("D:\\GitHub\\si1\\si1\\res\\had12.txt");
         }
 
         public Program(int factoryNumber, int locNumber, int popSize, int[,] distTable, int[,] flowTable)
@@ -115,6 +76,35 @@ namespace si1
             _flowTable = flowTable;
         }
 
+        public void ReadFile(string path)
+        {
+            string[] _lines = System.IO.File.ReadAllLines(path);
+            int _dim = int.Parse(_lines[0]);
+
+            _flowTable = new int[_dim, _dim];
+            _distTable = new int[_dim, _dim];
+
+            int i = 1;
+            for (; i < _dim + 1; i++)
+            {
+                for (int j = 0; j < _dim; j++)
+                {
+                    _flowTable[i - 1, j] = int.Parse(_lines[i].Split(' ')[j]);
+                }
+            }
+            i++;
+            for (; i < 2 * _dim + 2; i++)
+            {
+                for (int j = 0; j < _dim; j++)
+                {
+                    _distTable[i - _dim - 2, j] = int.Parse(_lines[i].Split(' ')[j]);
+                }
+            }
+
+            _factoryNumber = _dim;
+            _locNumber = _dim;
+        }
+
         public int CostFunc(int[] specimen)
         {
             int _out = 0;
@@ -122,7 +112,7 @@ namespace si1
             {
                 for (int j = i + 1; j < specimen.Length; j++)
                 {
-                    _out += Flow(i, j) * Dist(specimen[i], specimen[j]);
+                    _out += Flow(i, j) * Dist(specimen[i], specimen[j]) + Flow(j, i) * Dist(specimen[i], specimen[j]);
                 }
             }
             return _out;
@@ -215,6 +205,10 @@ namespace si1
 
         public Tuple<int[,], int[]> TournamentSelection(Tuple<int[,], int[], int[]> pop, int tournamentSize, Random rnd)
         {
+            if(tournamentSize == 0)
+            {
+                tournamentSize++;
+            }
             int _popSizeTemp = pop.Item1.GetLength(0);
 
             Tuple<int[,], int[]> _out = new Tuple<int[,], int[]>
@@ -318,7 +312,7 @@ namespace si1
         {
             int _popSizeTemp = pop.GetLength(0);
             int[] _best = GetRow(pop, _popSizeTemp - 1);
-            int _threshold = (int)(100 * px);
+            float _threshold = (100.0f * px);
 
             int[,] _out = new int[_popSizeTemp, pop.GetLength(1)];
 
@@ -327,7 +321,7 @@ namespace si1
                 int[] _chosen = GetRow(pop, i);
 
                 int _roll = rnd.Next(100) + 1;
-                if (_roll > _threshold)
+                if (_roll > (int)_threshold)
                 {
                     //nie ma krzyz
                     for (int k = 0; k < pop.GetLength(1); k++)
@@ -340,7 +334,7 @@ namespace si1
                     //jest krzyz
                     int _chosenIndex2 = rnd.Next(_popSizeTemp);
                     int[] _chosen2 = GetRow(pop, _chosenIndex2);
-                    int _breakpoint = rnd.Next(1, (_chosen.Length / 2)); //DUNNNNNNNNNNNNNNNNNNOOOOOOOOOOOO
+                    int _breakpoint = rnd.Next(1, (_chosen.Length / 2) + 1);
                     int[] _child = SingleCrossover(_chosen, _chosen2, _breakpoint, rnd);
                     Repair(_child);
 
@@ -383,7 +377,7 @@ namespace si1
         {
             int _popSizeTemp = pop.GetLength(0);
             int[] _best = GetRow(pop, _popSizeTemp - 1);
-            int _threshold = (int)(100 * pm);
+            float _threshold = (100.0f * pm);
 
             int[,] _out = new int[_popSizeTemp, pop.GetLength(1)];
 
@@ -392,7 +386,7 @@ namespace si1
                 int[] _chosen = GetRow(pop, i);
 
                 int _roll = rnd.Next(100) + 1;
-                if (_roll > _threshold)
+                if (_roll > (int)_threshold)
                 {
                     //nie ma mut
                     for (int k = 0; k < pop.GetLength(1); k++)
@@ -484,10 +478,10 @@ namespace si1
         {
             int _genNumber = 100;
             int _popSize = 100;
-            int _tournamentSize = 3;
+            int _tournamentSize = 2; //jak 0 to dziwne rzeczy
             float px = 0.7f;
-            float pm = 0.1f;
-            Boolean _bestProtection = true;
+            float pm = 0.01f;
+            Boolean _bestProtection = false;
 
             Program p = new Program(_popSize);
             Random _rnd = new Random();
@@ -498,8 +492,8 @@ namespace si1
 
             for (int i = 0; i < _genNumber; i++)
             {
-                _currPop = p.RouletteSelection(_currPopWithCost, _rnd).Item1;
-                //_currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize, _rnd).Item1;
+                //_currPop = p.RouletteSelection(_currPopWithCost, _rnd).Item1;
+                _currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize, _rnd).Item1;
                 //p.Show(_currPop);
                 _currPop = p.Crossover(_currPop, px, _rnd);
                 //p.Show(_currPop);
