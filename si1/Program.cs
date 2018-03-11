@@ -161,7 +161,11 @@ namespace si1
             for (int i = 0; i < howMany; i++)
             {
                 int _temp = rnd.Next(_locNumber);
+<<<<<<< HEAD
                 while (_out.Contains(_temp))
+=======
+                while(_out.Contains(_temp))
+>>>>>>> 6bd80c6008ad705295b8f75be07ed7b1192c31d4
                 {
                     _temp = rnd.Next(_locNumber);
                 }
@@ -294,8 +298,12 @@ namespace si1
             int[] _out = new int[parent1.Length];
             if (breakpoint < parent1.Length && parent1.Length == parent2.Length && breakpoint > 0)
             {
+<<<<<<< HEAD
                 int _which = rnd.Next(2);
                 if (_which == 0)
+=======
+                if (rnd.Next(2) == 0)
+>>>>>>> 6bd80c6008ad705295b8f75be07ed7b1192c31d4
                 {
                     Array.Copy(parent1, 0, _out, 0, breakpoint);
                     Array.Copy(parent2, breakpoint, _out, breakpoint, _out.Length - breakpoint);
@@ -340,8 +348,12 @@ namespace si1
                     //jest krzyz
                     int _chosenIndex2 = rnd.Next(_popSizeTemp);
                     int[] _chosen2 = GetRow(pop, _chosenIndex2);
+<<<<<<< HEAD
                     int _breakpoint = rnd.Next(1, (_chosen.Length / 2)); //DUNNNNNNNNNNNNNNNNNNOOOOOOOOOOOO
                     int[] _child = SingleCrossover(_chosen, _chosen2, _breakpoint, rnd);
+=======
+                    int[] _child = SingleCrossover(_chosen, _chosen2, (int)(_chosen.Length/2), _rnd);
+>>>>>>> 6bd80c6008ad705295b8f75be07ed7b1192c31d4
                     Repair(_child);
 
                     for (int j = 0; j < pop.GetLength(1); j++)
