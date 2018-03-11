@@ -141,10 +141,11 @@ namespace si1
         public int[,] InitialPop()
         {
             int[,] _out = new int[_popSize, _factoryNumber];
+            Random _rnd = new Random();
 
             for (int i = 0; i < _out.GetLength(0); i++)
             {
-                int[] _temp = RandomUniqueNums(_factoryNumber);
+                int[] _temp = RandomUniqueNums(_factoryNumber, _rnd);
                 for (int j = 0; j < _out.GetLength(1); j++)
                 {
                     _out[i, j] = _temp[j];
@@ -153,17 +154,16 @@ namespace si1
             return _out;
         }
 
-        public int[] RandomUniqueNums(int howMany)
+        public int[] RandomUniqueNums(int howMany, Random rnd)
         {
-            Random _rnd = new Random();
             int[] _out = Enumerable.Repeat(-1, howMany).ToArray();
 
-            for(int i = 0; i < howMany; i++)
+            for (int i = 0; i < howMany; i++)
             {
-                int _temp = _rnd.Next(_locNumber);
-                while(_out.Contains(_temp))
+                int _temp = rnd.Next(_locNumber);
+                while (_out.Contains(_temp))
                 {
-                    _temp = _rnd.Next(_locNumber);
+                    _temp = rnd.Next(_locNumber);
                 }
                 _out[i] = _temp;
             }
@@ -177,10 +177,11 @@ namespace si1
 
             for (int i = 0; i < pop.GetLength(0); i++)
             {
-                if (CostFunc(GetRow(pop, i)) < CostFunc(_out))
+                int _currCost = CostFunc(GetRow(pop, i));
+                if (_currCost < _bestCost)
                 {
                     _out = GetRow(pop, i);
-                    _bestCost = CostFunc(_out);
+                    _bestCost = _currCost;
                 }
             }
             return _out;
@@ -195,51 +196,49 @@ namespace si1
             for (int i = 0; i < pop.GetLength(0); i++)
             {
                 _costs[i] = CostFunc(GetRow(pop, i));
-                if(_costs[i] < _bestCost)
+                if (_costs[i] < _bestCost)
                 {
                     _best = GetRow(pop, i);
                     _bestCost = _costs[i];
                 }
             }
-            if(bestProtection)
+            if (bestProtection)
             {
                 return new Tuple<int[,], int[], int[]>(pop, _costs, _best);
             }
             else
             {
-                return new Tuple<int[,], int[], int[]>(pop, _costs, new int[pop.GetLength(1)]);
+                return new Tuple<int[,], int[], int[]>(pop, _costs, Enumerable.Repeat(-1, pop.GetLength(1)).ToArray());
             }
-            
+
         }
 
-        public Tuple<int[,], int[]> TournamentSelection(Tuple<int[,], int[], int[]> pop, int tournamentSize)
+        public Tuple<int[,], int[]> TournamentSelection(Tuple<int[,], int[], int[]> pop, int tournamentSize, Random rnd)
         {
-            Random _rnd = new Random();
             int _popSizeTemp = pop.Item1.GetLength(0);
 
             Tuple<int[,], int[]> _out = new Tuple<int[,], int[]>
                 (new int[_popSizeTemp, pop.Item1.GetLength(1)], new int[_popSizeTemp]);
 
-            Tuple<int[], int> _winner = new Tuple<int[], int>(new int[pop.Item1.GetLength(1)], int.MaxValue);
-
             for (int i = 0; i < _popSizeTemp; i++)
             {
-                for(int j = 0; j < tournamentSize; j++)
+                Tuple<int[], int> _winner = new Tuple<int[], int>(new int[pop.Item1.GetLength(1)], int.MaxValue);
+                for (int j = 0; j < tournamentSize; j++)
                 {
-                    int _playerIndex = _rnd.Next(_popSizeTemp);
-                    if(pop.Item2[_playerIndex] < _winner.Item2)
+                    int _playerIndex = rnd.Next(_popSizeTemp);
+                    if (pop.Item2[_playerIndex] < _winner.Item2)
                     {
                         _winner = new Tuple<int[], int>(GetRow(pop.Item1, _playerIndex), pop.Item2[_playerIndex]);
                     }
                 }
-                for(int j = 0; j < pop.Item1.GetLength(1); j++)
+                for (int j = 0; j < pop.Item1.GetLength(1); j++)
                 {
                     _out.Item1[i, j] = _winner.Item1[j];
                 }
                 _out.Item2[i] = _winner.Item2;
             }
 
-            if(pop.Item3[0] != pop.Item3[1])
+            if (pop.Item3[0] != pop.Item3[1])
             {
                 for (int j = 0; j < pop.Item1.GetLength(1); j++)
                 {
@@ -250,9 +249,8 @@ namespace si1
             return _out;
         }
 
-        public Tuple<int[,], int[]> RouletteSelection(Tuple<int[,], int[], int[]> pop)
+        public Tuple<int[,], int[]> RouletteSelection(Tuple<int[,], int[], int[]> pop, Random rnd)
         {
-            Random _rnd = new Random();
             int _popSizeTemp = pop.Item1.GetLength(0);
 
             Tuple<int[,], int[]> _out = new Tuple<int[,], int[]>
@@ -260,13 +258,13 @@ namespace si1
 
             int _totalSumOfCosts = pop.Item2.Sum();
 
-            for(int i = 0; i < _popSizeTemp; i++)
+            for (int i = 0; i < _popSizeTemp; i++)
             {
-                int _winnerNumber = _rnd.Next(_totalSumOfCosts);
+                int _winnerNumber = rnd.Next(_totalSumOfCosts);
                 int _sumOfCosts = 0;
                 int j = 0;
 
-                while(_sumOfCosts < _winnerNumber)
+                while (_sumOfCosts <= _winnerNumber)
                 {
                     _sumOfCosts += pop.Item2[j];
                     j++;
@@ -291,13 +289,22 @@ namespace si1
             return _out;
         }
 
-        public int[] SingleCrossover(int[] parent1, int[] parent2, int breakpoint)
+        public int[] SingleCrossover(int[] parent1, int[] parent2, int breakpoint, Random rnd)
         {
             int[] _out = new int[parent1.Length];
-            if(breakpoint < parent1.Length && parent1.Length == parent2.Length && breakpoint > 0)
+            if (breakpoint < parent1.Length && parent1.Length == parent2.Length && breakpoint > 0)
             {
-                Array.Copy(parent1, 0, _out, 0, breakpoint);
-                Array.Copy(parent2, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                int _which = rnd.Next(2);
+                if (_which == 0)
+                {
+                    Array.Copy(parent1, 0, _out, 0, breakpoint);
+                    Array.Copy(parent2, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                }
+                else
+                {
+                    Array.Copy(parent2, 0, _out, 0, breakpoint);
+                    Array.Copy(parent1, breakpoint, _out, breakpoint, _out.Length - breakpoint);
+                }
             }
             else
             {
@@ -307,22 +314,20 @@ namespace si1
             return _out;
         }
 
-        public int[,] Crossover(int[,] pop, float px)
+        public int[,] Crossover(int[,] pop, float px, Random rnd)
         {
-            Random _rnd = new Random();
             int _popSizeTemp = pop.GetLength(0);
             int[] _best = GetRow(pop, _popSizeTemp - 1);
-            int _threshold = (int) (100 * px);
+            int _threshold = (int)(100 * px);
 
             int[,] _out = new int[_popSizeTemp, pop.GetLength(1)];
 
             for (int i = 0; i < _popSizeTemp; i++)
             {
-                int _chosenIndex = _rnd.Next(_popSizeTemp);
-                int[] _chosen = GetRow(pop, _chosenIndex);
+                int[] _chosen = GetRow(pop, i);
 
-                int _roll = _rnd.Next(100) + 1;
-                if(_roll > _threshold)
+                int _roll = rnd.Next(100) + 1;
+                if (_roll > _threshold)
                 {
                     //nie ma krzyz
                     for (int k = 0; k < pop.GetLength(1); k++)
@@ -333,9 +338,10 @@ namespace si1
                 else
                 {
                     //jest krzyz
-                    int _chosenIndex2 = _rnd.Next(_popSizeTemp);
+                    int _chosenIndex2 = rnd.Next(_popSizeTemp);
                     int[] _chosen2 = GetRow(pop, _chosenIndex2);
-                    int[] _child = SingleCrossover(_chosen, _chosen2, (int)(_chosen.Length/2));
+                    int _breakpoint = rnd.Next(1, (_chosen.Length / 2)); //DUNNNNNNNNNNNNNNNNNNOOOOOOOOOOOO
+                    int[] _child = SingleCrossover(_chosen, _chosen2, _breakpoint, rnd);
                     Repair(_child);
 
                     for (int j = 0; j < pop.GetLength(1); j++)
@@ -355,14 +361,15 @@ namespace si1
             return _out;
         }
 
-        public int[] SingleMutation(int[] spec, int genToSwap)
+        public int[] SingleMutation(int[] spec, Random rnd)
         {
             int[] _out = spec;
-            if(genToSwap < _out.Length/2)
+            int _genToSwap = rnd.Next(_out.Length / 2);
+            if (_genToSwap < _out.Length / 2)
             {
-                int _temp = _out[genToSwap];
-                _out[genToSwap] = _out[_out.Length - genToSwap - 1];
-                _out[_out.Length - genToSwap - 1] = _temp;
+                int _temp = _out[_genToSwap];
+                _out[_genToSwap] = _out[_out.Length - _genToSwap - 1];
+                _out[_out.Length - _genToSwap - 1] = _temp;
             }
             else
             {
@@ -372,9 +379,8 @@ namespace si1
             return _out;
         }
 
-        public int[,] Mutation(int[,] pop, float pm)
+        public int[,] Mutation(int[,] pop, float pm, Random rnd)
         {
-            Random _rnd = new Random();
             int _popSizeTemp = pop.GetLength(0);
             int[] _best = GetRow(pop, _popSizeTemp - 1);
             int _threshold = (int)(100 * pm);
@@ -383,10 +389,9 @@ namespace si1
 
             for (int i = 0; i < _popSizeTemp; i++)
             {
-                int _chosenIndex = _rnd.Next(_popSizeTemp);
-                int[] _chosen = GetRow(pop, _chosenIndex);
+                int[] _chosen = GetRow(pop, i);
 
-                int _roll = _rnd.Next(100) + 1;
+                int _roll = rnd.Next(100) + 1;
                 if (_roll > _threshold)
                 {
                     //nie ma mut
@@ -398,7 +403,7 @@ namespace si1
                 else
                 {
                     //jest mut
-                    int[] _mutant = SingleMutation(_chosen, 1);
+                    int[] _mutant = SingleMutation(_chosen, rnd);
 
                     for (int j = 0; j < pop.GetLength(1); j++)
                     {
@@ -419,13 +424,13 @@ namespace si1
 
         public void Repair(int[] spec)
         {
-            for(int i = 0; i < spec.Length; i++)
+            for (int i = 0; i < spec.Length; i++)
             {
-                for(int j = i + 1; j < spec.Length; j++)
+                for (int j = i + 1; j < spec.Length; j++)
                 {
-                    if(spec[i] == spec[j])
+                    if (spec[i] == spec[j])
                     {
-                        if(spec[j] + 1 < _locNumber)
+                        if (spec[j] + 1 < _locNumber)
                         {
                             spec[j]++;
                         }
@@ -462,32 +467,49 @@ namespace si1
             return _out;
         }
 
+        public void Show(int[,] arr)
+        {
+            for(int i = 0; i < arr.GetLength(0); i++)
+            {
+                for(int j = 0; j < arr.GetLength(1); j++)
+                {
+                    Console.Write(arr[i,j] + ", ");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine("#######");
+        }
+
         static void Main(string[] args)
         {
             int _genNumber = 100;
             int _popSize = 100;
-            int _tournamentSize = 5;
+            int _tournamentSize = 3;
             float px = 0.7f;
             float pm = 0.01f;
-            Boolean _bestProtection = true; //jak false to najlepszy zwraca same 0
+            Boolean _bestProtection = true;
 
             Program p = new Program(_popSize);
+            Random _rnd = new Random();
 
             int[] _best = new int[p._factoryNumber];
             int[,] _currPop = p.InitialPop();
             Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
 
-            for(int i = 0; i < _genNumber; i++)
+            for (int i = 0; i < _genNumber; i++)
             {
-                //_currPop = p.RouletteSelection(_currPopWithCost).Item1;
-                _currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize).Item1;
-                _currPop = p.Crossover(_currPop, px);
-                _currPop = p.Mutation(_currPop, pm);
+                _currPop = p.RouletteSelection(_currPopWithCost, _rnd).Item1;
+                //_currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize, _rnd).Item1;
+                //p.Show(_currPop);
+                _currPop = p.Crossover(_currPop, px, _rnd);
+                //p.Show(_currPop);
+                _currPop = p.Mutation(_currPop, pm, _rnd);
+                //p.Show(_currPop);
                 _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
 
                 Console.WriteLine(_currPopWithCost.Item2[99]);
 
-                if(_bestProtection)
+                if (_bestProtection)
                 {
                     _best = _currPopWithCost.Item3;
                 }
@@ -497,13 +519,13 @@ namespace si1
                 }
             }
 
-            for(int i = 0; i < _best.Length; i++)
+            for (int i = 0; i < _best.Length; i++)
             {
-                if(i == 0)
+                if (i == 0)
                 {
                     Console.Write("[");
                 }
-                if(i != _best.Length - 1)
+                if (i != _best.Length - 1)
                 {
                     Console.Write(_best[i] + ", ");
                 }
@@ -512,6 +534,8 @@ namespace si1
                     Console.WriteLine(_best[i] + "]");
                 }
             }
+
+            Console.WriteLine(p.CostFunc(new int[] { 2, 9, 10, 1, 11, 4, 5, 6, 7, 0, 3, 8 }));
         }
     }
 }
