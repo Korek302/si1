@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -476,9 +477,11 @@ namespace si1
 
         static void Main(string[] args)
         {
+            int _choice = 2;
+
             int _genNumber = 100;
             int _popSize = 100;
-            int _tournamentSize = 2; //jak 0 to dziwne rzeczy
+            int _tournamentSize = 0;
             float px = 0.7f;
             float pm = 0.01f;
             Boolean _bestProtection = false;
@@ -486,50 +489,140 @@ namespace si1
             Program p = new Program(_popSize);
             Random _rnd = new Random();
 
-            int[] _best = new int[p._factoryNumber];
-            int[,] _currPop = p.InitialPop();
-            Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
+            if(_choice == 0)
+            {//AG
+                int[] _best = new int[p._factoryNumber];
+                int[,] _currPop = p.InitialPop();
+                Tuple<int[,], int[], int[]> _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
 
-            for (int i = 0; i < _genNumber; i++)
-            {
-                //_currPop = p.RouletteSelection(_currPopWithCost, _rnd).Item1;
-                _currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize, _rnd).Item1;
-                //p.Show(_currPop);
-                _currPop = p.Crossover(_currPop, px, _rnd);
-                //p.Show(_currPop);
-                _currPop = p.Mutation(_currPop, pm, _rnd);
-                //p.Show(_currPop);
-                _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
-
-                Console.WriteLine(_currPopWithCost.Item2[99]);
-
-                if (_bestProtection)
+                for (int i = 0; i < _genNumber; i++)
                 {
-                    _best = _currPopWithCost.Item3;
+                    //_currPop = p.RouletteSelection(_currPopWithCost, _rnd).Item1;
+                    _currPop = p.TournamentSelection(_currPopWithCost, _tournamentSize, _rnd).Item1;
+                    //p.Show(_currPop);
+                    _currPop = p.Crossover(_currPop, px, _rnd);
+                    //p.Show(_currPop);
+                    _currPop = p.Mutation(_currPop, pm, _rnd);
+                    //p.Show(_currPop);
+                    _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
+
+                    Console.WriteLine(_currPopWithCost.Item2[99]);
+
+                    if (_bestProtection)
+                    {
+                        _best = _currPopWithCost.Item3;
+                    }
+                    else
+                    {
+                        _best = p.BestSpeciment(_currPopWithCost.Item1);
+                    }
                 }
-                else
+
+                for (int i = 0; i < _best.Length; i++)
                 {
-                    _best = p.BestSpeciment(_currPopWithCost.Item1);
+                    if (i == 0)
+                    {
+                        Console.Write("[");
+                    }
+                    if (i != _best.Length - 1)
+                    {
+                        Console.Write(_best[i] + ", ");
+                    }
+                    if (i == _best.Length - 1)
+                    {
+                        Console.WriteLine(_best[i] + "]");
+                    }
+                }
+
+                Console.WriteLine(p.CostFunc(new int[] { 2, 9, 10, 1, 11, 4, 5, 6, 7, 0, 3, 8 }));
+            }
+            else if (_choice == 1)
+            {//RANDOM
+                int[] _bestRandom = p.RandomUniqueNums(p._factoryNumber, _rnd);
+                int _bestRandomCost = p.CostFunc(_bestRandom);
+                
+                for (int i = 0; i < _genNumber; i++)
+                {
+                    int[] _speciment = p.RandomUniqueNums(p._factoryNumber, _rnd);
+                    int _specimentCost = p.CostFunc(_speciment);
+                    if (_specimentCost < _bestRandomCost)
+                    {
+                        _bestRandom = _speciment;
+                        _bestRandomCost = _specimentCost;
+                    }
+                    Console.WriteLine(_bestRandomCost);
+                }
+                for (int i = 0; i < _bestRandom.Length; i++)
+                {
+                    if (i == 0)
+                    {
+                        Console.Write("[");
+                    }
+                    if (i != _bestRandom.Length - 1)
+                    {
+                        Console.Write(_bestRandom[i] + ", ");
+                    }
+                    if (i == _bestRandom.Length - 1)
+                    {
+                        Console.WriteLine(_bestRandom[i] + "]");
+                    }
                 }
             }
+            else if(_choice == 2)
+            {//GREEDY
+                //ArrayList _list = new ArrayList();
+                List<int> _list = new List<int>();
+                int[] _best = new int[p._factoryNumber];
+                int _bestCost = int.MaxValue;
 
-            for (int i = 0; i < _best.Length; i++)
-            {
-                if (i == 0)
+                for(int i = 0; i < p._factoryNumber; i++)
                 {
-                    Console.Write("[");
+                    _list.Add(i);
+                    for(int j = 1; j < p._factoryNumber; j++)
+                    {
+                        int _next = 0;
+                        int _bestSingleCost = int.MaxValue;
+                        for(int k = 0; k < p._factoryNumber; k++)
+                        {
+                            if (!_list.Contains(k))
+                            {
+                                _list.Add(k);
+                                if (p.CostFunc(_list.ToArray()) < _bestSingleCost)
+                                {
+                                    _next = k;
+                                }
+                                _list.RemoveAt(j);
+                            }
+                        }
+                        _list.Add(_next);
+                    }
+                    int _cost = p.CostFunc(_list.ToArray());
+                    if(_cost < _bestCost)
+                    {
+                        _best = _list.ToArray();
+                        _bestCost = _cost;
+                    }
+                    _list.Clear();
+
+                    Console.WriteLine(_bestCost);
                 }
-                if (i != _best.Length - 1)
+
+                for (int i = 0; i < _best.Length; i++)
                 {
-                    Console.Write(_best[i] + ", ");
-                }
-                if (i == _best.Length - 1)
-                {
-                    Console.WriteLine(_best[i] + "]");
+                    if (i == 0)
+                    {
+                        Console.Write("[");
+                    }
+                    if (i != _best.Length - 1)
+                    {
+                        Console.Write(_best[i] + ", ");
+                    }
+                    if (i == _best.Length - 1)
+                    {
+                        Console.WriteLine(_best[i] + "]");
+                    }
                 }
             }
-
-            Console.WriteLine(p.CostFunc(new int[] { 2, 9, 10, 1, 11, 4, 5, 6, 7, 0, 3, 8 }));
         }
     }
 }
