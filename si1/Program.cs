@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -477,17 +478,19 @@ namespace si1
 
         static void Main(string[] args)
         {
-            int _choice = 2;
+            int _choice = 0;
 
-            int _genNumber = 100;
-            int _popSize = 100;
-            int _tournamentSize = 0;
+            int _genNumber = 50;
+            int _popSize = 200;
+            int _tournamentSize = 3;
             float px = 0.7f;
-            float pm = 0.01f;
-            Boolean _bestProtection = false;
+            float pm = 0.3f;
+            Boolean _bestProtection = true;
 
             Program p = new Program(_popSize);
             Random _rnd = new Random();
+
+            string[] _file = new string[_genNumber];
 
             if(_choice == 0)
             {//AG
@@ -506,7 +509,7 @@ namespace si1
                     //p.Show(_currPop);
                     _currPopWithCost = p.Evaluate(_currPop, _bestProtection);
 
-                    Console.WriteLine(_currPopWithCost.Item2[99]);
+                    //Console.WriteLine(_currPopWithCost.Item2[99]);
 
                     if (_bestProtection)
                     {
@@ -516,7 +519,18 @@ namespace si1
                     {
                         _best = p.BestSpeciment(_currPopWithCost.Item1);
                     }
+
+                    _file[i] = (i + 1) + "," + _currPopWithCost.Item2.Min() + "," + _currPopWithCost.Item2.Average() + "," + _currPopWithCost.Item2.Max();
+                    Console.WriteLine(_file[i]);
                 }
+                string _fileSingleStr = "";
+                for(int i =  0; i < _genNumber; i++)
+                {
+                    _fileSingleStr += _file[i] + "\n";
+                }
+                File.WriteAllText("D:\\GitHub\\si1\\si1\\res\\resultsAG.csv", _fileSingleStr);
+
+                Console.WriteLine("\n" + p.CostFunc(_best));
 
                 for (int i = 0; i < _best.Length; i++)
                 {
@@ -551,7 +565,15 @@ namespace si1
                         _bestRandomCost = _specimentCost;
                     }
                     Console.WriteLine(_bestRandomCost);
+                    _file[i] = (i + 1) + "," + _bestRandomCost.ToString();
                 }
+                string _fileSingleStr = "";
+                for (int i = 0; i < _genNumber; i++)
+                {
+                    _fileSingleStr += _file[i] + "\n";
+                }
+                File.WriteAllText("D:\\GitHub\\si1\\si1\\res\\resultsRND.csv", _fileSingleStr);
+
                 for (int i = 0; i < _bestRandom.Length; i++)
                 {
                     if (i == 0)
@@ -570,7 +592,6 @@ namespace si1
             }
             else if(_choice == 2)
             {//GREEDY
-                //ArrayList _list = new ArrayList();
                 List<int> _list = new List<int>();
                 int[] _best = new int[p._factoryNumber];
                 int _bestCost = int.MaxValue;
@@ -587,9 +608,11 @@ namespace si1
                             if (!_list.Contains(k))
                             {
                                 _list.Add(k);
-                                if (p.CostFunc(_list.ToArray()) < _bestSingleCost)
+                                int _singleCost = p.CostFunc(_list.ToArray());
+                                if (_singleCost < _bestSingleCost)
                                 {
                                     _next = k;
+                                    _bestSingleCost = _singleCost;
                                 }
                                 _list.RemoveAt(j);
                             }
@@ -604,8 +627,10 @@ namespace si1
                     }
                     _list.Clear();
 
-                    Console.WriteLine(_bestCost);
+                    Console.WriteLine(_cost);
                 }
+
+                Console.WriteLine("\n" + _bestCost);
 
                 for (int i = 0; i < _best.Length; i++)
                 {
